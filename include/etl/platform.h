@@ -69,6 +69,15 @@ SOFTWARE.
 #define ETL_PLATFORM_64BIT (UINT64_MAX == UINTPTR_MAX)
 
 //*************************************
+// Common integral types.
+namespace etl
+{
+  typedef ::size_t    size_t;
+  typedef ::uintptr_t uintptr_t;
+  typedef ::ptrdiff_t ptrdiff_t;
+}
+
+//*************************************
 // Define debug macros.
 #if (defined(_DEBUG) || defined(DEBUG)) && !defined(ETL_DEBUG)
   #define ETL_DEBUG
