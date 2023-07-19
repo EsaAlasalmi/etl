@@ -2231,6 +2231,28 @@ typedef integral_constant<bool, true>  true_type;
   template <typename T>
   using signed_type_t = typename signed_type<T>::type;
 #endif
+
+  //***************************************************************************
+  /// unwrap_reference.
+  //***************************************************************************
+  template <typename U>
+  struct unwrap_reference<std::reference_wrapper<U>> { using type = U&; };
+
+#if ETL_USING_CPP17
+  template <typename T>
+  using unwrap_reference_t = typename unwrap_reference<T>::type;
+#endif
+
+  //***************************************************************************
+  /// unwrap_ref_decay.
+  //***************************************************************************
+  template <typename T>
+  struct unwrap_ref_decay : std::unwrap_reference<std::decay_t<T>> {};
+
+#if ETL_USING_CPP17 
+  template <typename T>
+  using unwrap_ref_decay_t = typename unwrap_ref_decay<T>::type;
+#endif
 }
 
 // Helper macros

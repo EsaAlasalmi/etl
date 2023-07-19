@@ -34,6 +34,9 @@ SOFTWARE.
 #include "platform.h"
 #include "type_traits.h"
 
+#include "private/tuple_element.h"
+#include "private/tuple_size.h"
+
 #if defined(ETL_IN_UNIT_TEST) || ETL_USING_STL
   #if ETL_USING_CPP11
     #include <utility>
@@ -326,13 +329,38 @@ namespace etl
 #endif
 
   //******************************************************************************
+  template <size_t Index, typename T1, typename T2>
+  struct tuple_element<Index, ETL_OR_STD::pair<T1, T2> >
+  {
+    ETL_STATIC_ASSERT(Index < 2U, "pair has only 2 elements");
+  };
+
+  template <typename T1, typename T2>
+  struct tuple_element<0U, ETL_OR_STD::pair<T1, T2> >
+  {
+    typedef T1 type;
+  };
+
+  template <typename T1, typename T2>
+  struct tuple_element<1U, ETL_OR_STD::pair<T1, T2> >
+  {
+    typedef T2 type;
+  };
+
+  //******************************************************************************
+  template <typename T1, typename T2>
+  struct tuple_size<ETL_OR_STD::pair<T1, T2>> : public etl::integral_constant<size_t, 2U>
+  {
+  };
+
+  //******************************************************************************
   template <typename T1, typename T2>
   inline void swap(pair<T1, T2>& a, pair<T1, T2>& b)
   {
     a.swap(b);
   }
 
-  ///  Two pairs of the same type are equal iff their members are equal.
+  ///  Two pairs of the same type are equal if their members are equal.
   template <typename T1, typename T2>
   inline bool operator ==(const pair<T1, T2>& a, const pair<T1, T2>& b)
   {

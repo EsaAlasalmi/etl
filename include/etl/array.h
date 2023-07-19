@@ -43,6 +43,9 @@ SOFTWARE.
 #include "nth_type.h"
 #include "initializer_list.h"
 
+#include "private/tuple_element.h"
+#include "private/tuple_size.h"
+
 #include <stddef.h>
 
 ///\defgroup array array
@@ -727,6 +730,23 @@ namespace etl
     ETL_STATIC_ASSERT(I < MAXN, "Index out of bounds");
     return a[I];
   }
+
+  //***************************************************************************
+  /// Get the element type at the index in the array.
+  /// Index is ignored.
+  //***************************************************************************
+  template <size_t Index, typename T, size_t N>
+  struct tuple_element<Index, etl::array<T, N> >
+  {
+    typedef T type;
+  };
+
+  //******************************************************************************
+  /// Gets the size of the array.
+  template <typename T, size_t N>
+  struct tuple_size<etl::array<T, N> > : public etl::integral_constant<size_t, N>
+  {
+  };
 }
 
 #endif

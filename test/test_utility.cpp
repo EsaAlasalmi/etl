@@ -291,6 +291,30 @@ namespace
     }
 
     //*************************************************************************
+    TEST(test_pair_tuple_element)
+    {
+      using Pair = ETL_OR_STD::pair<int, std::string>;
+
+      CHECK_TRUE((std::is_same<int,         etl::tuple_element_t<0U, Pair>>::value));
+      CHECK_TRUE((std::is_same<std::string, etl::tuple_element_t<1U, Pair>>::value));
+
+      // Uncomment to enable static assert.
+      //using type = etl::tuple_element_t<3U, Pair >;
+    }
+
+    //*************************************************************************
+    TEST(test_pair_tuple_size)
+    {
+      using Pair = ETL_OR_STD::pair<int, std::string>;
+
+      CHECK_EQUAL(2U, etl::tuple_size<Pair>::value);
+
+#if ETL_USING_CPP17
+      CHECK_EQUAL(2U, etl::tuple_size_v<Pair>);
+#endif
+    }
+
+    //*************************************************************************
     TEST(test_exchange)
     {
       int a = 1;

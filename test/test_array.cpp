@@ -882,5 +882,22 @@ namespace
 #endif
     }
 #endif
+
+    //*************************************************************************
+    TEST(test_tuple_element)
+    {
+      CHECK_TRUE((std::is_same<int, etl::tuple_element_t<0U, Data>>::value));
+      CHECK_TRUE((std::is_same<int, etl::tuple_element_t<SIZE, Data>>::value));
+    }
+
+    //*************************************************************************
+    TEST(test_tuple_size)
+    {
+      CHECK_EQUAL(SIZE, etl::tuple_size<Data>::value);
+
+#if ETL_USING_CPP17
+      CHECK_EQUAL(SIZE, etl::tuple_size_v<Data>);
+#endif
+    }
   };
 }

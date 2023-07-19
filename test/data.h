@@ -201,6 +201,13 @@ public:
     other.valid = false;
   }
 
+  TestDataM(const TestDataM&& other) noexcept
+    : value(std::move(other.value))
+    , valid(true)
+  {
+    other.valid = false;
+  }
+
   virtual ~TestDataM()
   {
     valid = false;
@@ -241,8 +248,8 @@ public:
     return valid;
   }
 
-  T    value;
-  bool valid;
+  T value;
+  mutable bool valid;
 
 private:
 

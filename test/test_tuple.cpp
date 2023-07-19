@@ -28,27 +28,58 @@ SOFTWARE.
 
 #include "unit_test_framework.h"
 
-#include "data.h"
+#include "Data.h"
 
 #include "etl/tuple.h"
 
 #include <string>
+#include <tuple>
 
 namespace
 {
-  using Data = TestDataDC<std::string>;
+  using Data  = TestDataDC<std::string>;
+  using DataM = TestDataM<std::string>;
 
   SUITE(test_tuple)
   {
     //*************************************************************************
+    TEST(test_etl_tuple_size)
+    {
+      using Tuple = etl::tuple<int, double, int, Data>;
+
+      Tuple theTuple;
+
+      CHECK_EQUAL(4U, etl::tuple_size<Tuple>::value);
+      CHECK_EQUAL(4U, theTuple.size());
+
+#if (ETL_USING_CPP17)
+      CHECK_EQUAL(4U, etl::tuple_size_v<Tuple>);
+#endif
+    }
+
+    //*************************************************************************
+    TEST(test_std_tuple_size)
+    {
+      using Tuple = std::tuple<int, double, int, Data>;
+
+      Tuple theTuple;
+
+      CHECK_EQUAL(4U, etl::tuple_size<Tuple>::value);
+
+#if (ETL_USING_CPP17)
+      CHECK_EQUAL(4U, etl::tuple_size_v<Tuple>);
+#endif
+    }
+
+    //*************************************************************************
     TEST(test_default_constructor)
     {
-      etl::tuple<int, double, int, Data> data;
+      etl::tuple<int, double, int, Data> theTuple;
 
-      int i0          = etl::get<0>(data);
-      double d1       = etl::get<1>(data);
-      int i2          = etl::get<2>(data);
-      std::string& s3 = etl::get<3>(data).value;
+      int i0          = etl::get<0>(theTuple);
+      double d1       = etl::get<1>(theTuple);
+      int i2          = etl::get<2>(theTuple);
+      std::string& s3 = etl::get<3>(theTuple).value;
 
       CHECK_EQUAL(0, i0);
       CHECK_EQUAL(0, d1);
@@ -57,14 +88,30 @@ namespace
     }
 
     //*************************************************************************
-    TEST(test_constructor)
+    TEST(test_construct_from_parameters)
     {
-      etl::tuple<int, double, int, Data> data(1, 2.2, 3, Data("4"));
+      etl::tuple<int, double, int, Data> theTuple(1, 2.2, 3, Data("4"));
 
-      int i0          = etl::get<0>(data);
-      double d1       = etl::get<1>(data);
-      int i2          = etl::get<2>(data);
-      std::string& s3 = etl::get<3>(data).value;
+      int i0          = etl::get<0>(theTuple);
+      double d1       = etl::get<1>(theTuple);
+      int i2          = etl::get<2>(theTuple);
+      std::string& s3 = etl::get<3>(theTuple).value;
+
+      CHECK_EQUAL(1, i0);
+      CHECK_EQUAL(2.2, d1);
+      CHECK_EQUAL(3, i2);
+      CHECK_EQUAL(std::string("4"), s3);
+    }
+
+    //*************************************************************************
+    TEST(test_construct_from_parameters_including_move_only)
+    {
+      etl::tuple<int, double, int, DataM> theTuple(1, 2.2, 3, etl::move(DataM("4")));
+
+      int i0          = etl::get<0>(theTuple);
+      double d1       = etl::get<1>(theTuple);
+      int i2          = etl::get<2>(theTuple);
+      std::string& s3 = etl::get<3>(theTuple).value;
 
       CHECK_EQUAL(1, i0);
       CHECK_EQUAL(2.2, d1);
@@ -74,14 +121,14 @@ namespace
 
 #if ETL_USING_CPP17
     //*************************************************************************
-    TEST(test_constructor_using_template_deduction_guideline)
+    TEST(test_constructor_from_parameters_using_template_deduction_guideline)
     {
-      etl::tuple data(1, 2.2, 3, Data("4"));
+      etl::tuple theTuple(1, 2.2, 3, Data("4"));
 
-      int i0          = etl::get<0>(data);
-      double d1       = etl::get<1>(data);
-      int i2          = etl::get<2>(data);
-      std::string& s3 = etl::get<3>(data).value;
+      int i0          = etl::get<0>(theTuple);
+      double d1       = etl::get<1>(theTuple);
+      int i2          = etl::get<2>(theTuple);
+      std::string& s3 = etl::get<3>(theTuple).value;
 
       CHECK_EQUAL(1, i0);
       CHECK_EQUAL(2.2, d1);
@@ -91,11 +138,115 @@ namespace
 #endif
 
     //*************************************************************************
-    TEST(test_static_assert)
+    TEST(test_construct_from_std_tuple)
     {
-      etl::tuple<int, double, int, Data> data;
+      std::tuple<int, double, int, Data> stdTuple(1, 2.2, 3, Data("4"));
+      etl::tuple<int, double, int, Data> etlTuple(stdTuple);
 
-      //auto result = etl::get<4>(data);
+      //int i0 = etl::get<0>(theTuple);
+      //double d1 = etl::get<1>(theTuple);
+      //int i2 = etl::get<2>(theTuple);
+      //std::string& s3 = etl::get<3>(theTuple).value;
+
+      //CHECK_EQUAL(1, i0);
+      //CHECK_EQUAL(2.2, d1);
+      //CHECK_EQUAL(3, i2);
+      //CHECK_EQUAL(std::string("4"), s3);
     }
+
+    //*************************************************************************
+    TEST(test_get)
+    {
+      etl::tuple<Data, DataM> theTuple(Data("1"), DataM("3"));
+      const etl::tuple<Data, DataM> const_data(Data("2"), DataM("4"));
+
+      Data d0  = etl::get<0>(theTuple);
+      Data d1  = etl::get<0>(const_data);
+      DataM d2 = etl::get<1>(etl::move(theTuple));
+      DataM d3 = etl::get<1>(etl::move(const_data));
+
+      CHECK_EQUAL(std::string("1"), d0.value);
+      CHECK_EQUAL(std::string("2"), d1.value);
+      CHECK_EQUAL(std::string("3"), d2.value);
+      CHECK_EQUAL(std::string("4"), d3.value);
+    }
+
+    //*************************************************************************
+    TEST(test_construct_from_pair)
+    {
+      ETL_OR_STD::pair<int, Data> p(1, Data("2"));
+
+      etl::tuple<int, Data> theTuple(p);
+
+      int  i = etl::get<0>(theTuple);
+      Data d = etl::get<1>(theTuple);
+
+      CHECK_EQUAL(1, i);
+      CHECK_EQUAL(std::string("2"), d.value);
+    }
+
+    //*************************************************************************
+    TEST(test_construct_from_const_pair)
+    {
+      const ETL_OR_STD::pair<int, Data> p(1, Data("2"));
+
+      etl::tuple<int, Data> theTuple(p);
+
+      int  i = etl::get<0>(theTuple);
+      Data d = etl::get<1>(theTuple);
+
+      CHECK_EQUAL(1, i);
+      CHECK_EQUAL(std::string("2"), d.value);
+    }
+
+    //*************************************************************************
+    TEST(test_construct_from_move_only_pair)
+    {
+      ETL_OR_STD::pair<int, DataM> p(1, etl::move(DataM("2")));
+
+      etl::tuple<int, DataM> theTuple(etl::move(p));
+
+      int  i = etl::get<0>(theTuple);
+      DataM d = etl::move(etl::get<1>(theTuple));
+
+      CHECK_EQUAL(1, i);
+      CHECK_EQUAL(std::string("2"), d.value);
+    }
+
+    //*************************************************************************
+    template <typename T> std::string IdentifyType() { return "Unknown type"; }
+    template <> std::string IdentifyType<int>()      { return "int"; }
+    template <> std::string IdentifyType<double>()   { return "double"; }
+    template <> std::string IdentifyType<Data>()     { return "Data"; }
+
+    TEST(test_tuple_element)
+    {
+      using Tuple = etl::tuple<int, double, int, Data>;
+
+      CHECK_EQUAL((IdentifyType<int>()),    (IdentifyType<etl::tuple_element_t<0U, Tuple>>()));
+      CHECK_EQUAL((IdentifyType<double>()), (IdentifyType<etl::tuple_element_t<1U, Tuple>>()));
+      CHECK_EQUAL((IdentifyType<int>()),    (IdentifyType<etl::tuple_element_t<2U, Tuple>>()));
+      CHECK_EQUAL((IdentifyType<Data>()),   (IdentifyType<etl::tuple_element_t<3U, Tuple>>()));
+    }
+
+    //*************************************************************************
+    ETL_NODISCARD bool Get()
+    {
+      return true;
+    }
+
+    TEST(test_ignore_t)
+    {
+      // Should compiler without error.
+      etl::ignore = Get();
+    }
+
+    ////*************************************************************************
+    //TEST(test_static_assert)
+    //{
+    //  etl::tuple<int, double, int, Data> theTuple;
+
+    //  auto result = etl::get<4>(theTuple);
+    //}
   }
 }
